@@ -453,7 +453,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       <div className="mb-6">
         <div className="mb-1 flex items-center">
           <label
-            className="text-xxs font-medium mr-2"
+            className="mr-2 text-xxs font-medium"
             htmlFor="static-apca-slider"
             id="static-apca-slider-label"
             style={{ color: `var(${ThemeVariablesKeys.fg})` }}
@@ -478,7 +478,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleApcaChange(event);
             }}
-            className="w-14 rounded border px-1 text-xxs text-right"
+            className="w-14 rounded border px-1 text-right text-xxs"
             max={108}
             min={0}
             step={0.1}
@@ -506,7 +506,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       <div className="mb-6">
         <div className="mb-1 flex items-center">
           <label
-            className="text-xxs font-medium mr-2"
+            className="mr-2 text-xxs font-medium"
             htmlFor="static-chroma-slider"
             id="static-chroma-slider-label"
             style={{ color: `var(${ThemeVariablesKeys.fg})` }}
@@ -531,7 +531,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleChromaChange(event);
             }}
-            className="w-14 rounded border px-1 text-xxs text-right"
+            className="w-14 rounded border px-1 text-right text-xxs"
             max={0.37}
             min={0}
             step={0.001}
@@ -559,7 +559,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       <div className="mb-6">
         <div className="mb-1 flex items-center">
           <label
-            className="text-xxs font-medium mr-2"
+            className="mr-2 text-xxs font-medium"
             htmlFor="static-hue-slider"
             id="static-hue-slider-label"
             style={{ color: `var(${ThemeVariablesKeys.fg})` }}
@@ -584,7 +584,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleHueChange(event);
             }}
-            className="w-14 rounded border px-1 text-xxs text-right"
+            className="w-14 rounded border px-1 text-right text-xxs"
             max={360}
             min={0}
             step={1}
