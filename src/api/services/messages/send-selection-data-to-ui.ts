@@ -12,6 +12,8 @@ export const sendSelectionDataToUi = (): void => {
 
     const messagePayload = buildMessagePayload(currentSelection);
 
+    console.log({messagePayload})
+
     figma.ui.postMessage({
       payload: messagePayload,
       type: MessageTypes.SelectionChange,

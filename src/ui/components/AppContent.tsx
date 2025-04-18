@@ -9,7 +9,7 @@ import {
   $isEmptySelection,
   $isInvalidBackground,
   $isMultiSelection,
-  $isUnprocessedBlendModes,
+  $isUnprocessedBlendModes, $userSelection,
 } from '~ui/stores/selected-nodes.ts';
 import { isEmpty } from '~utils/not-empty.ts';
 import { type ReactElement } from 'react';
@@ -20,6 +20,9 @@ export const AppContent = (): ReactElement => {
   const isMultiSelection = useStore($isMultiSelection);
   const isUnprocessedBlendModes = useStore($isUnprocessedBlendModes);
   const contrastConclusion = useStore($contrastConclusion);
+  const userSelection = useStore($userSelection);
+
+  console.log({userSelection})
 
   if (isInvalidBackground) {
     return <InvalidBackgroundSelectionMessage />;
@@ -42,10 +45,12 @@ export const AppContent = (): ReactElement => {
   } else {
     const pair = contrastConclusion[0];
 
+    console.log({pair})
+
     if (isEmpty(pair)) {
       return <EmptySelectionMessage />;
     }
 
-    return <Selection id={pair.id} isLast size="large" userSelection={pair} />;
+    return <div id="app-content"><Selection id={pair.id} isLast size="large" userSelection={pair} /></div>;
   }
 };

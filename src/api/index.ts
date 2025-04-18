@@ -38,40 +38,43 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
   if (message.type === MessageTypes.UpdateNodeColor) {
     try {
       console.log('DEBUG: Received UpdateNodeColor message:', JSON.stringify(message));
-      
+
       // Check if the node is still in the current selection or document
       const nodeId = message.payload.nodeId;
-      
+
+
       // Ensure nodeId is defined
       if (nodeId === undefined || nodeId === '') {
         console.warn('Invalid nodeId provided - skipping color update');
         return;
       }
-      
+
       // Use findAll to reliably find the node anywhere in the document
       // This is necessary because findOne only searches direct children
       const matchingNodes = figma.currentPage.findAll(node => node.id === nodeId);
       const nodeExists = matchingNodes.length > 0;
-      
+
+      console.log({matchingNodes, nodeExists})
+
       console.log(`DEBUG: Node existence check for ID ${String(nodeId)}: ${String(nodeExists)}, found ${matchingNodes.length} matching nodes`);
-      
+
       if (!nodeExists) {
         console.warn(`Node with ID ${nodeId as string} not found in document - skipping color update`);
-        
+
         // Only notify on non-preview updates
         if (message.payload.isPreview === false) {
           figma.notify('Cannot update color: Element no longer exists');
         }
         return;
       }
-      
+
       // Log current selection for debugging
       const currentSelection = figma.currentPage.selection;
       console.log(`DEBUG: Current selection before color update - count: ${currentSelection.length}, IDs: ${currentSelection.map(n => n.id).join(', ')}`);
-      
+
       // Proceed with update if node exists
       console.log(`DEBUG: Calling updateNodeColor with nodeId: ${String(nodeId)}, hex: ${String(message.payload.color.hex)}, isPreview: ${String(message.payload.isPreview)}`);
-      
+
       // Pass the matching node directly to updateNodeColor
       if (matchingNodes.length > 0) {
         const targetNode = matchingNodes[0] as SceneNode;

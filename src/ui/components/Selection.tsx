@@ -39,11 +39,11 @@ export const Selection = ({
   const [currentStyleNumber, setCurrentStyleNumber] = useState(
     SEGMENTED_FONT_STYLES.INITIAL
   );
-  
+
   // Reference to original fg and apca for display
   const adjustedFg = fg;
   const adjustedApca = apca;
-  
+
   const handleCurrentStyleNumberChange = (): void => {
     const newStyleNumber = currentStyleNumber + 1;
     if (newStyleNumber > SEGMENTED_FONT_STYLES.MAX) {
@@ -98,7 +98,7 @@ export const Selection = ({
               size={size}
             />
           </div>
-          
+
           {/* Render color adjustment sliders outside the main preview div */}
           {size === 'large' && (
             <StaticColorAdjustmentSliders
@@ -106,6 +106,8 @@ export const Selection = ({
               bg={bg}
               fg={fg}
               key={`slider-${id}`}
+              // THIS IS NOT THE ID OF THE ELEMENT BUT ID OF THE PAIR
+              // QUESTION: WHAT EXACTLY TO PASS HERE
               nodeId={id}
             />
           )}

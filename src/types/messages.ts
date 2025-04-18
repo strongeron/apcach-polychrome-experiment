@@ -34,9 +34,7 @@ export interface SelectionChangeMessage {
   text: SelectionMessageTypes;
 }
 
-export type SelectionChangeEvent =
-  | SelectionChangeMessage
-  | SelectionChangePayload;
+export type SelectionChangeEvent = SelectionChangeMessage | SelectionChangePayload;
 
 export interface ColorSpaceDisplayModeChangeMessage {
   colorSpaceDisplayMode: ColorSpaceDisplayModes;
