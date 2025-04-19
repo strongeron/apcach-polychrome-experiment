@@ -109,6 +109,7 @@ const blendSelectionPair = async (
     bg: formatColorData(bgColorData, isBgBlended),
     fg: formatColorData(fgColorData, isFgBlended),
     id: nodeId,
+    originalSelectedNodeId: selectedNode.id,
   };
 };
 

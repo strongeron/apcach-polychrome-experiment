@@ -12,56 +12,62 @@ interface StaticColorAdjustmentSlidersProps {
   nodeId?: string; // Make nodeId optional since it might not be available in all contexts
 }
 
-export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSlidersProps> = ({
-  apca,
-  bg,
-  fg,
-  nodeId,
-}) => {
+export const StaticColorAdjustmentSliders: React.FC<
+  StaticColorAdjustmentSlidersProps
+> = ({ apca, bg, fg, nodeId }) => {
   // Track if component is mounted to prevent operations before ready
   const isMounted = useRef(false);
-  
+
   // Simple state for slider values
-  const initialApca = typeof apca === 'number' && !Number.isNaN(apca) ? Math.abs(apca) : 60;
-  const initialHue = typeof fg?.oklch?.h === 'number' && !Number.isNaN(fg?.oklch?.h) ? fg.oklch.h : 0;
-  const initialChroma = typeof fg?.oklch?.c === 'number' && !Number.isNaN(fg?.oklch?.c) ? fg.oklch.c : 0.1;
-  
+  const initialApca =
+    typeof apca === 'number' && !Number.isNaN(apca) ? Math.abs(apca) : 60;
+  const initialHue =
+    typeof fg?.oklch?.h === 'number' && !Number.isNaN(fg?.oklch?.h)
+      ? fg.oklch.h
+      : 0;
+  const initialChroma =
+    typeof fg?.oklch?.c === 'number' && !Number.isNaN(fg?.oklch?.c)
+      ? fg.oklch.c
+      : 0.1;
+
   const [targetApca, setTargetApca] = useState<number>(initialApca);
   const [fgHue, setFgHue] = useState<number>(initialHue);
   const [fgChroma, setFgChroma] = useState<number>(initialChroma);
   const [apcachResult, setApcachResult] = useState<ApcachColor | null>(null);
-  
+
   // Set mounted flag on component mount
   useEffect(() => {
     isMounted.current = true;
-    
+
     return () => {
       isMounted.current = false;
     };
   }, []);
-  
+
   // For debugging - log when nodeId changes
   useEffect(() => {
     if (nodeId !== undefined && nodeId !== '') {
       console.log('StaticColorAdjustmentSliders received nodeId:', nodeId);
     }
   }, [nodeId]);
-  
+
   // Simple getters for display
   const getFgHex = (): string => fg?.hex ?? '#000000';
   const getBgHex = (): string => bg?.hex ?? '#FFFFFF';
-  
+
   // Get OKLCH values with safe defaults
   const getFgLightness = (): number => fg?.oklch?.l ?? 0.5;
   const getFgChroma = (): number => fg?.oklch?.c ?? 0.1;
   const getFgHue = (): number => fg?.oklch?.h ?? 0;
-  
+
   const getBgLightness = (): number => bg?.oklch?.l ?? 1.0;
   const getBgChroma = (): number => bg?.oklch?.c ?? 0;
   const getBgHue = (): number => bg?.oklch?.h ?? 0;
-  
+
   // Helper function to convert ApcachColor to Oklch (from generate-ui-colors.ts)
-  const apcachToCulori = (apcachColor: ApcachColor): ContrastConclusion['fg']['oklch'] => {
+  const apcachToCulori = (
+    apcachColor: ApcachColor
+  ): ContrastConclusion['fg']['oklch'] => {
     return {
       alpha: apcachColor.alpha,
       c: apcachColor.chroma,
@@ -70,7 +76,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       mode: 'oklch',
     };
   };
-  
+
   // Helper function to check if we can proceed with updating Figma
   const canUpdateFigma = (result: ApcachColor | null): boolean => {
     // We can only update if:
@@ -81,17 +87,17 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       console.log('Cannot update Figma: component not mounted');
       return false;
     }
-    
+
     if (nodeId === undefined || nodeId === '') {
       console.log('Cannot update Figma: missing nodeId');
       return false;
     }
-    
+
     if (result === null) {
       console.log('Cannot update Figma: missing color result');
       return false;
     }
-    
+
     return true;
   };
 
@@ -109,7 +115,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         const contrast = crTo(getBgHex(), targetApca);
         const result = apcach(contrast, fgChroma, fgHue, alpha);
         setApcachResult(result);
-        
+
         // Update Figma if conditions are met
         if (canUpdateFigma(result)) {
           updateFigmaNode(result);
@@ -120,7 +126,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       setApcachResult(null);
     }
   }, [bg?.hex, apca, targetApca, fgChroma, fgHue, fg?.oklch?.alpha, nodeId]);
-  
+
   // Function to update the Figma node with new color
   const updateFigmaNode = (apcachColor: ApcachColor): void => {
     // Skip if component not mounted or no nodeId
@@ -128,26 +134,26 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       console.log('Not updating Figma: component not mounted');
       return;
     }
-    
+
     if (nodeId === undefined || nodeId === '') {
       console.log('Not updating Figma: missing nodeId');
       return;
     }
-    
+
     try {
       // Convert APCACH to required formats
       const newHex = apcachToCss(apcachColor, 'hex');
       const newOklch = apcachToCulori(apcachColor);
-      
+
       // Enhanced debugging - log all relevant data
-      console.log('DEBUG: Preparing to update node color. Details:', { 
+      console.log('DEBUG: Preparing to update node color. Details:', {
         hexColor: newHex,
         isPreview: true,
         messageType: MessageTypes.UpdateNodeColor,
         nodeId,
-        oklchColor: newOklch
+        oklchColor: newOklch,
       });
-      
+
       // Create the message payload for better debugging
       const messagePayload = {
         pluginMessage: {
@@ -162,46 +168,53 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
           type: MessageTypes.UpdateNodeColor,
         },
       };
-      
-      console.log('DEBUG: Sending message to Figma with payload:', JSON.stringify(messagePayload));
-      
+
+      console.log(
+        'DEBUG: Sending message to Figma with payload:',
+        JSON.stringify(messagePayload)
+      );
+
       // Send update to Figma
       parent.postMessage(messagePayload, '*');
-      
+
       console.log('DEBUG: Message sent to Figma');
     } catch (error) {
       console.error('Failed to update Figma node color:', error);
     }
   };
-  
+
   // Format OKLCH as string
   const formatOklch = (l: number, c: number, h: number): string => {
     return `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${Math.round(h)}°)`;
   };
-  
+
   // Format APCACH as string
   const formatApcach = (color: ApcachColor | null): string => {
     if (color === null) return 'Not available';
-    
-    return `L: ${color.lightness.toFixed(3)}, C: ${color.chroma.toFixed(3)}, H: ${Math.round(color.hue)}°, A: ${color.alpha.toFixed(2)}`;
+
+    return `L: ${color.lightness.toFixed(3)}, C: ${color.chroma.toFixed(
+      3
+    )}, H: ${Math.round(color.hue)}°, A: ${color.alpha.toFixed(2)}`;
   };
-  
+
   // Format APCACH as function call syntax
   const formatApcachCall = (): string => {
     if (apcachResult === null) return '';
-    
+
     // Extract necessary values
     const { alpha, chroma, contrastConfig, hue } = apcachResult;
     const alphaString = alpha !== 1 ? `, ${alpha}` : '';
-    
+
     // Format as function call
-    return `apcach(crTo("${contrastConfig.bgColor}", ${Math.abs(contrastConfig.cr)}), ${chroma.toFixed(3)}, ${Math.round(hue)}${alphaString})`;
+    return `apcach(crTo("${contrastConfig.bgColor}", ${Math.abs(
+      contrastConfig.cr
+    )}), ${chroma.toFixed(3)}, ${Math.round(hue)}${alphaString})`;
   };
-  
+
   // Get hex representation of APCACH result
   const getApcachHex = (): string => {
     if (apcachResult === null) return '';
-    
+
     try {
       return apcachToCss(apcachResult, 'hex');
     } catch (error) {
@@ -209,12 +222,12 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       return '';
     }
   };
-  
+
   // Simple event handlers for sliders with Figma updates
   const handleApcaChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newApca = parseFloat(e.target.value);
     setTargetApca(newApca);
-    
+
     // Recalculate APCACH and update Figma
     try {
       if (hasValidBgHex()) {
@@ -222,7 +235,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         const contrast = crTo(getBgHex(), newApca);
         const result = apcach(contrast, fgChroma, fgHue, alpha);
         setApcachResult(result);
-        
+
         // Update Figma if conditions are met
         if (canUpdateFigma(result)) {
           updateFigmaNode(result);
@@ -236,7 +249,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
   const handleHueChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newHue = parseFloat(e.target.value);
     setFgHue(newHue);
-    
+
     // Recalculate APCACH and update Figma
     try {
       if (hasValidBgHex()) {
@@ -244,7 +257,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         const contrast = crTo(getBgHex(), targetApca);
         const result = apcach(contrast, fgChroma, newHue, alpha);
         setApcachResult(result);
-        
+
         // Update Figma if conditions are met
         if (canUpdateFigma(result)) {
           updateFigmaNode(result);
@@ -258,7 +271,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
   const handleChromaChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newChroma = parseFloat(e.target.value);
     setFgChroma(newChroma);
-    
+
     // Recalculate APCACH and update Figma
     try {
       if (hasValidBgHex()) {
@@ -266,7 +279,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         const contrast = crTo(getBgHex(), targetApca);
         const result = apcach(contrast, newChroma, fgHue, alpha);
         setApcachResult(result);
-        
+
         // Update Figma if conditions are met
         if (canUpdateFigma(result)) {
           updateFigmaNode(result);
@@ -284,28 +297,28 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       console.log('Not applying to Figma: component not mounted');
       return;
     }
-    
+
     if (nodeId === undefined || nodeId === '') {
       console.log('Not applying to Figma: missing nodeId');
       return;
     }
-    
+
     if (apcachResult === null) {
       console.log('Not applying to Figma: missing color result');
       return;
     }
-    
+
     try {
       // Convert APCACH to required formats - apcachResult is guaranteed not null here
       const newHex = apcachToCss(apcachResult, 'hex');
       const newOklch = apcachToCulori(apcachResult);
-      
-      console.log(`Sending final color update to Figma for node ${nodeId}:`, { 
+
+      console.log(`Sending final color update to Figma for node ${nodeId}:`, {
         hex: newHex,
         isPreview: false,
-        oklch: newOklch
+        oklch: newOklch,
       });
-      
+
       // Send update to Figma (non-preview)
       parent.postMessage(
         {
@@ -328,7 +341,8 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
     }
   };
 
-  const displayApca = typeof apca === 'number' && !Number.isNaN(apca) ? Math.round(apca) : 0;
+  const displayApca =
+    typeof apca === 'number' && !Number.isNaN(apca) ? Math.round(apca) : 0;
 
   return (
     <div
@@ -345,7 +359,7 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       >
         Color Values
       </h3>
-      
+
       {/* Display color swatches and values */}
       <div className="mb-4 grid grid-cols-2 gap-2">
         <div>
@@ -358,27 +372,28 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
             </span>
           </div>
           <div className="mb-1 flex items-center">
-            <div 
+            <div
               className="mr-2 h-10 w-10 rounded-md border"
               style={{ backgroundColor: getFgHex() }}
             ></div>
             <div className="flex flex-col">
-              <span 
+              <span
                 className="text-xxs"
                 style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
               >
                 HEX: {getFgHex()}
               </span>
-              <span 
+              <span
                 className="text-xxs"
                 style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
               >
-                OKLCH: {formatOklch(getFgLightness(), getFgChroma(), getFgHue())}
+                OKLCH:{' '}
+                {formatOklch(getFgLightness(), getFgChroma(), getFgHue())}
               </span>
             </div>
           </div>
         </div>
-        
+
         <div>
           <div className="mb-2">
             <span
@@ -389,58 +404,71 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
             </span>
           </div>
           <div className="mb-1 flex items-center">
-            <div 
+            <div
               className="mr-2 h-10 w-10 rounded-md border"
               style={{ backgroundColor: getBgHex() }}
             ></div>
             <div className="flex flex-col">
-              <span 
+              <span
                 className="text-xxs"
                 style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
               >
                 HEX: {getBgHex()}
               </span>
-              <span 
+              <span
                 className="text-xxs"
                 style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
               >
-                OKLCH: {formatOklch(getBgLightness(), getBgChroma(), getBgHue())}
+                OKLCH:{' '}
+                {formatOklch(getBgLightness(), getBgChroma(), getBgHue())}
               </span>
             </div>
           </div>
         </div>
-        
+
         <div className="col-span-2 my-2">
-          <div 
+          <div
             className="rounded py-1 text-center text-xs font-medium"
-            style={{color: `var(${ThemeVariablesKeys.fg})` }}
+            style={{ color: `var(${ThemeVariablesKeys.fg})` }}
           >
             APCA: {displayApca}
           </div>
-          
+
           {/* Display APCACH calculation results */}
           <div className="mt-2">
-            <div className="mb-1 text-xxs font-medium" style={{ color: `var(${ThemeVariablesKeys.fg})` }}>
+            <div
+              className="mb-1 text-xxs font-medium"
+              style={{ color: `var(${ThemeVariablesKeys.fg})` }}
+            >
               APCACH Result:
             </div>
             <div className="flex items-center">
               {apcachResult !== null && getApcachHex() !== '' && (
-                <div 
+                <div
                   className="mr-2 h-6 w-6 rounded border"
                   style={{ backgroundColor: getApcachHex() }}
                 ></div>
               )}
               <div className="flex-1">
-                <div className="text-xxs" style={{ color: `var(${ThemeVariablesKeys.secondary})` }}>
+                <div
+                  className="text-xxs"
+                  style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
+                >
                   {formatApcach(apcachResult)}
                 </div>
                 {getApcachHex() !== '' && (
-                  <div className="text-xxs" style={{ color: `var(${ThemeVariablesKeys.secondary})` }}>
+                  <div
+                    className="text-xxs"
+                    style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
+                  >
                     HEX: {getApcachHex()}
                   </div>
                 )}
                 {apcachResult !== null && (
-                  <div className="mt-1 font-mono text-xxs" style={{ color: `var(${ThemeVariablesKeys.secondary})` }}>
+                  <div
+                    className="mt-1 font-mono text-xxs"
+                    style={{ color: `var(${ThemeVariablesKeys.secondary})` }}
+                  >
                     {formatApcachCall()}
                   </div>
                 )}
@@ -463,26 +491,29 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         </div>
         <div className="flex items-center gap-2">
           <input
-            onChange={e => {
+            onChange={(e) => {
               let v = Number(e.target.value);
               if (isNaN(v)) v = 0;
               if (v < 0) v = 0;
               if (v > 108) v = 108;
               setTargetApca(v);
-              
+
               // Trigger APCA change handler
-              const event = { 
-                target: { 
-                  value: v.toString() 
-                } 
+              const event = {
+                target: {
+                  value: v.toString(),
+                },
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleApcaChange(event);
+            }}
+            style={{
+              backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`,
+              color: `var(${ThemeVariablesKeys.fg})`,
             }}
             className="w-14 rounded border px-1 text-right text-xxs"
             max={108}
             min={0}
             step={0.1}
-            style={{ backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`, color: `var(${ThemeVariablesKeys.fg})` }}
             type="number"
             value={targetApca}
           />
@@ -516,26 +547,29 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         </div>
         <div className="flex items-center gap-2">
           <input
-            onChange={e => {
+            onChange={(e) => {
               let v = Number(e.target.value);
               if (isNaN(v)) v = 0;
               if (v < 0) v = 0;
               if (v > 0.37) v = 0.37;
               setFgChroma(v);
-              
+
               // Trigger Chroma change handler
-              const event = { 
-                target: { 
-                  value: v.toString() 
-                } 
+              const event = {
+                target: {
+                  value: v.toString(),
+                },
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleChromaChange(event);
+            }}
+            style={{
+              backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`,
+              color: `var(${ThemeVariablesKeys.fg})`,
             }}
             className="w-14 rounded border px-1 text-right text-xxs"
             max={0.37}
             min={0}
             step={0.001}
-            style={{ backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`, color: `var(${ThemeVariablesKeys.fg})` }}
             type="number"
             value={fgChroma}
           />
@@ -569,26 +603,29 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
         </div>
         <div className="flex items-center gap-2">
           <input
-            onChange={e => {
+            onChange={(e) => {
               let v = Number(e.target.value);
               if (isNaN(v)) v = 0;
               if (v < 0) v = 0;
               if (v > 360) v = 360;
               setFgHue(v);
-              
+
               // Trigger Hue change handler
-              const event = { 
-                target: { 
-                  value: v.toString() 
-                } 
+              const event = {
+                target: {
+                  value: v.toString(),
+                },
               } as unknown as React.ChangeEvent<HTMLInputElement>;
               handleHueChange(event);
+            }}
+            style={{
+              backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`,
+              color: `var(${ThemeVariablesKeys.fg})`,
             }}
             className="w-14 rounded border px-1 text-right text-xxs"
             max={360}
             min={0}
             step={1}
-            style={{ backgroundColor: `var(${ThemeVariablesKeys.bgBorder})`, color: `var(${ThemeVariablesKeys.fg})` }}
             type="number"
             value={fgHue}
           />
@@ -608,12 +645,12 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
           />
         </div>
       </div>
-      
+
       {/* Add "Apply to Figma" button for permanent updates */}
       {nodeId !== undefined && nodeId !== '' && (
         <div className="mt-4 flex justify-end">
           <button
-            style={{ 
+            style={{
               backgroundColor: `var(${ThemeVariablesKeys.fg})`,
               color: `var(${ThemeVariablesKeys.bg})`,
             }}
@@ -626,4 +663,4 @@ export const StaticColorAdjustmentSliders: React.FC<StaticColorAdjustmentSliders
       )}
     </div>
   );
-}; 
+};

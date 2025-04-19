@@ -37,11 +37,13 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
 
   if (message.type === MessageTypes.UpdateNodeColor) {
     try {
-      console.log('DEBUG: Received UpdateNodeColor message:', JSON.stringify(message));
+      console.log(
+        'DEBUG: Received UpdateNodeColor message:',
+        JSON.stringify(message)
+      );
 
       // Check if the node is still in the current selection or document
       const nodeId = message.payload.nodeId;
-
 
       // Ensure nodeId is defined
       if (nodeId === undefined || nodeId === '') {
@@ -51,15 +53,23 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
 
       // Use findAll to reliably find the node anywhere in the document
       // This is necessary because findOne only searches direct children
-      const matchingNodes = figma.currentPage.findAll(node => node.id === nodeId);
+      const matchingNodes = figma.currentPage.findAll(
+        (node) => node.id === nodeId
+      );
       const nodeExists = matchingNodes.length > 0;
 
-      console.log({matchingNodes, nodeExists})
-
-      console.log(`DEBUG: Node existence check for ID ${String(nodeId)}: ${String(nodeExists)}, found ${matchingNodes.length} matching nodes`);
+      console.log(
+        `DEBUG: Node existence check for ID ${String(nodeId)}: ${String(
+          nodeExists
+        )}, found ${matchingNodes.length} matching nodes`
+      );
 
       if (!nodeExists) {
-        console.warn(`Node with ID ${nodeId as string} not found in document - skipping color update`);
+        console.warn(
+          `Node with ID ${
+            nodeId as string
+          } not found in document - skipping color update`
+        );
 
         // Only notify on non-preview updates
         if (message.payload.isPreview === false) {
@@ -70,10 +80,20 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
 
       // Log current selection for debugging
       const currentSelection = figma.currentPage.selection;
-      console.log(`DEBUG: Current selection before color update - count: ${currentSelection.length}, IDs: ${currentSelection.map(n => n.id).join(', ')}`);
+      console.log(
+        `DEBUG: Current selection before color update - count: ${
+          currentSelection.length
+        }, IDs: ${currentSelection.map((n) => n.id).join(', ')}`
+      );
 
       // Proceed with update if node exists
-      console.log(`DEBUG: Calling updateNodeColor with nodeId: ${String(nodeId)}, hex: ${String(message.payload.color.hex)}, isPreview: ${String(message.payload.isPreview)}`);
+      console.log(
+        `DEBUG: Calling updateNodeColor with nodeId: ${String(
+          nodeId
+        )}, hex: ${String(message.payload.color.hex)}, isPreview: ${String(
+          message.payload.isPreview
+        )}`
+      );
 
       // Pass the matching node directly to updateNodeColor
       if (matchingNodes.length > 0) {
@@ -86,7 +106,9 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
         );
       } else {
         // This should never happen due to earlier check, but just in case
-        console.error('Unexpected error: Node found but then lost before update');
+        console.error(
+          'Unexpected error: Node found but then lost before update'
+        );
       }
     } catch (error) {
       console.error('Error in UpdateNodeColor handler:', error);

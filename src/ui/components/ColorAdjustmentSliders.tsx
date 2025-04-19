@@ -1,13 +1,7 @@
 // Import in correct order
 import { MessageTypes } from '~types/messages';
 import { type ContrastConclusion } from '~ui/types';
-import {
-  apcach,
-  type ApcachColor,
-  apcachToCss,
-  crTo,
-  maxChroma
-} from 'apcach';
+import { apcach, type ApcachColor, apcachToCss, crTo, maxChroma } from 'apcach';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { ThemeVariablesKeys } from './ThemeVariablesProvider';
@@ -29,7 +23,9 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
 }) => {
   // Early return with null if essential props are missing
   if (bg === undefined || fg === undefined) {
-    console.warn('Missing essential color data, cannot render color adjustment UI');
+    console.warn(
+      'Missing essential color data, cannot render color adjustment UI'
+    );
     return null;
   }
 
@@ -38,14 +34,16 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
 
   // Track if library functions are available
   const hasLibraryFunctions = useRef(
-    typeof apcach === 'function' && 
-    typeof apcachToCss === 'function' && 
-    typeof maxChroma === 'function' &&
-    typeof crTo === 'function'
+    typeof apcach === 'function' &&
+      typeof apcachToCss === 'function' &&
+      typeof maxChroma === 'function' &&
+      typeof crTo === 'function'
   );
 
   // Helper function to convert ApcachColor to Oklch (from generate-ui-colors.ts)
-  const apcachToCulori = (apcachColor: ApcachColor): ContrastConclusion['fg']['oklch'] => {
+  const apcachToCulori = (
+    apcachColor: ApcachColor
+  ): ContrastConclusion['fg']['oklch'] => {
     return {
       alpha: apcachColor.alpha,
       c: apcachColor.chroma,
@@ -66,15 +64,23 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
   };
 
   // Initialize state with values from selected color, with defensive null checks
-  const [targetApca, setTargetApca] = useState<number>(typeof apca === 'number' ? Math.abs(apca) : 0);
-  const [fgHue, setFgHue] = useState<number>(fg?.oklch?.h !== undefined ? fg.oklch.h : 0);
-  const [fgChroma, setFgChroma] = useState<number>(fg?.oklch?.c !== undefined ? fg.oklch.c : 0);
-  const [chromaMax, setChromaMax] = useState<number>(safeMaxChroma(fg?.oklch?.l !== undefined ? fg.oklch.l : 0));
+  const [targetApca, setTargetApca] = useState<number>(
+    typeof apca === 'number' ? Math.abs(apca) : 0
+  );
+  const [fgHue, setFgHue] = useState<number>(
+    fg?.oklch?.h !== undefined ? fg.oklch.h : 0
+  );
+  const [fgChroma, setFgChroma] = useState<number>(
+    fg?.oklch?.c !== undefined ? fg.oklch.c : 0
+  );
+  const [chromaMax, setChromaMax] = useState<number>(
+    safeMaxChroma(fg?.oklch?.l !== undefined ? fg.oklch.l : 0)
+  );
 
   // Set mounted flag on component mount
   useEffect(() => {
     isMounted.current = true;
-    
+
     return () => {
       isMounted.current = false;
     };
@@ -84,7 +90,7 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
   useEffect(() => {
     // Only run if component is mounted
     if (!isMounted.current) return;
-    
+
     // Only update if we have valid values
     if (typeof apca === 'number') {
       setTargetApca(Math.abs(apca));
@@ -99,25 +105,39 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
   }, [fg, bg, apca]);
 
   // Calculate new color based on slider values - simplified based on generate-ui-colors.ts pattern
-  const updateColor = (hue: number, chroma: number, targetApca: number): void => {
+  const updateColor = (
+    hue: number,
+    chroma: number,
+    targetApca: number
+  ): void => {
     // Early return if component not mounted or library functions missing
     if (!isMounted.current || !hasLibraryFunctions.current) {
-      console.warn('Cannot update color: component not mounted or missing library functions');
+      console.warn(
+        'Cannot update color: component not mounted or missing library functions'
+      );
       return;
     }
-    
+
     // Validate inputs are proper numeric values
-    if (typeof hue !== 'number' || typeof chroma !== 'number' || typeof targetApca !== 'number') {
-      console.error('Invalid input types for updateColor', { chroma, hue, targetApca });
+    if (
+      typeof hue !== 'number' ||
+      typeof chroma !== 'number' ||
+      typeof targetApca !== 'number'
+    ) {
+      console.error('Invalid input types for updateColor', {
+        chroma,
+        hue,
+        targetApca,
+      });
       return;
     }
-  
+
     try {
       // Check for required data using optional chaining
       if (
-        bg?.hex === undefined || 
-        (typeof bg?.hex === 'string' && bg.hex.length === 0) || 
-        fg === undefined || 
+        bg?.hex === undefined ||
+        (typeof bg?.hex === 'string' && bg.hex.length === 0) ||
+        fg === undefined ||
         fg.oklch === undefined
       ) {
         console.error('Missing required color data', { bg, fg });
@@ -126,19 +146,14 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
 
       // Simplified color generation using pattern from transformFgColor in generate-ui-colors.ts
       const alpha = fg.oklch.alpha ?? 1;
-      
+
       // Generate the new contrast-based color
-      const apcachColor = apcach(
-        crTo(bg.hex, targetApca),
-        chroma,
-        hue,
-        alpha
-      );
+      const apcachColor = apcach(crTo(bg.hex, targetApca), chroma, hue, alpha);
 
       // Convert to required formats
       const newHex = apcachToCss(apcachColor, 'hex');
       const newOklch = apcachToCulori(apcachColor);
-      
+
       // Create new foreground color object
       const newFg = {
         hex: newHex,
@@ -172,7 +187,13 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
     } catch (error) {
       console.error('Failed to update color:', error);
       // Simple fallback if calculation fails - only attempt if component is still mounted
-      if (isMounted.current && fg !== undefined && typeof fg.hex === 'string' && fg.hex.length > 0 && fg.oklch !== undefined) {
+      if (
+        isMounted.current &&
+        fg !== undefined &&
+        typeof fg.hex === 'string' &&
+        fg.hex.length > 0 &&
+        fg.oklch !== undefined
+      ) {
         onColorChange(fg, targetApca * (apca < 0 ? -1 : 1));
       }
     }
@@ -204,13 +225,13 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
       console.warn('Component not mounted, skipping apply');
       return;
     }
-    
+
     // Ensure we have the necessary data before sending the message
     if (
-      fg === undefined || 
-      fg.hex === undefined || 
-      (typeof fg.hex === 'string' && fg.hex.length === 0) || 
-      fg.oklch === undefined || 
+      fg === undefined ||
+      fg.hex === undefined ||
+      (typeof fg.hex === 'string' && fg.hex.length === 0) ||
+      fg.oklch === undefined ||
       nodeId.length === 0
     ) {
       console.error('Missing data required for color update');
@@ -221,8 +242,8 @@ export const ColorAdjustmentSliders: React.FC<ColorAdjustmentSlidersProps> = ({
     const safeColor = {
       hex: fg.hex,
       oklch: {
-        ...fg.oklch
-      }
+        ...fg.oklch,
+      },
     };
 
     parent.postMessage(

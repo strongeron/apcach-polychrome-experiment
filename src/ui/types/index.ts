@@ -5,4 +5,5 @@ export interface ContrastConclusion {
   bg: { hex: string; isBlended: boolean; oklch: Oklch };
   fg: { hex: string; isBlended: boolean; oklch: Oklch };
   id: string;
+  originalSelectedNodeId: string;
 }

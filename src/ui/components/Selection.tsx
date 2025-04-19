@@ -34,7 +34,7 @@ export const Selection = ({
   id,
   isLast,
   size,
-  userSelection: { apca, bg, fg },
+  userSelection: { apca, bg, fg, originalSelectedNodeId },
 }: Props): ReactElement => {
   const [currentStyleNumber, setCurrentStyleNumber] = useState(
     SEGMENTED_FONT_STYLES.INITIAL
@@ -95,6 +95,7 @@ export const Selection = ({
               id={id}
               isLast={isLast}
               onApcaDoubleClick={handleCurrentStyleNumberChange}
+              originalSelectedNodeId={originalSelectedNodeId}
               size={size}
             />
           </div>
@@ -106,9 +107,7 @@ export const Selection = ({
               bg={bg}
               fg={fg}
               key={`slider-${id}`}
-              // THIS IS NOT THE ID OF THE ELEMENT BUT ID OF THE PAIR
-              // QUESTION: WHAT EXACTLY TO PASS HERE
-              nodeId={id}
+              nodeId={originalSelectedNodeId}
             />
           )}
         </div>
