@@ -37,53 +37,41 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
 
   if (message.type === MessageTypes.UpdateNodeColor) {
     try {
-      console.log(
-        'DEBUG: Received UpdateNodeColor message:',
-        JSON.stringify(message)
-      );
+      // Validate inputs
+      const { nodeId, color, isPreview, isBlended, addNewFill } = message.payload;
 
-      // Check if the node is still in the current selection or document
-      const nodeId = message.payload.nodeId;
-
-      // Ensure nodeId is defined
-      if (nodeId === undefined || nodeId === '') {
-        console.warn('Invalid nodeId provided - skipping color update');
+      if (nodeId === undefined || color === undefined) {
+        console.error('Missing required parameters in UpdateNodeColor message');
         return;
       }
 
-      // Use findAll to reliably find the node anywhere in the document
-      // This is necessary because findOne only searches direct children
+      console.log(
+        `DEBUG: Received UpdateNodeColor message: ${JSON.stringify(message)}`
+      );
+
+      // Check if the node exists
       const matchingNodes = figma.currentPage.findAll(
         (node) => node.id === nodeId
       );
-      const nodeExists = matchingNodes.length > 0;
-
       console.log(
-        `DEBUG: Node existence check for ID ${String(nodeId)}: ${String(
-          nodeExists
-        )}, found ${matchingNodes.length} matching nodes`
+        `DEBUG: Node existence check for ID ${nodeId}: ${
+          matchingNodes.length > 0
+        }, found ${matchingNodes.length} matching nodes`
       );
 
-      if (!nodeExists) {
-        console.warn(
-          `Node with ID ${
-            nodeId as string
-          } not found in document - skipping color update`
-        );
-
-        // Only notify on non-preview updates
-        if (message.payload.isPreview === false) {
-          figma.notify('Cannot update color: Element no longer exists');
+      if (matchingNodes.length === 0) {
+        console.error(`Node not found: ${nodeId}`);
+        if (isPreview === false) {
+          figma.notify('Node not found');
         }
         return;
       }
 
-      // Log current selection for debugging
-      const currentSelection = figma.currentPage.selection;
+      // Log current selection for better debugging
       console.log(
         `DEBUG: Current selection before color update - count: ${
-          currentSelection.length
-        }, IDs: ${currentSelection.map((n) => n.id).join(', ')}`
+          figma.currentPage.selection.length
+        }, IDs: ${figma.currentPage.selection.map((n) => n.id).join(', ')}`
       );
 
       // Proceed with update if node exists
@@ -92,7 +80,7 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
           nodeId
         )}, hex: ${String(message.payload.color.hex)}, isPreview: ${String(
           message.payload.isPreview
-        )}`
+        )}, isBlended: ${String(isBlended || false)}, addNewFill: ${String(addNewFill || false)}`
       );
 
       // Pass the matching node directly to updateNodeColor
@@ -102,7 +90,9 @@ figma.ui.onmessage = (message: MessagePayload<any>) => {
           message.payload.nodeId,
           message.payload.color,
           message.payload.isPreview,
-          targetNode // Pass the node directly
+          targetNode, // Pass the node directly
+          isBlended || false, // Pass isBlended flag, default to false if undefined
+          addNewFill || false // Pass addNewFill flag, default to false if undefined
         );
       } else {
         // This should never happen due to earlier check, but just in case

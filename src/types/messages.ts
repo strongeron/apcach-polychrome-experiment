@@ -55,4 +55,5 @@ export interface UpdateNodeColorPayload {
   };
   isPreview: boolean;
   nodeId: string;
+  isBlended?: boolean;
 }

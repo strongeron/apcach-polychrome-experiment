@@ -17,6 +17,7 @@
     "test": "pnpm run /^test:/"
   },
   "dependencies": {
+    "@create-figma-plugin/ui": "^4.0.0",
     "@figma/plugin-typings": "^1.79.0",
     "@floating-ui/react": "^0.25.2",
     "@nanostores/react": "^0.7.1",

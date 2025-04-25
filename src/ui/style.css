@@ -71,3 +71,59 @@
     @apply outline-none;
   }
 }
+
+/* Figma Slider Styles */
+.figma-slider {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.figma-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background-color: var(--figma-color-bg-brand);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  transform-origin: center;
+}
+
+.figma-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  background-color: var(--figma-color-bg-brand-hover);
+}
+
+.figma-slider:focus {
+  outline: none;
+}
+
+.figma-slider:active::-webkit-slider-thumb {
+  background-color: var(--figma-color-bg-brand-pressed);
+}
+
+/* Firefox support */
+.figma-slider::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--figma-color-bg-brand);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.figma-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  background-color: var(--figma-color-bg-brand-hover);
+}
+
+.figma-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.figma-slider:active::-moz-range-thumb {
+  background-color: var(--figma-color-bg-brand-pressed);
+}
